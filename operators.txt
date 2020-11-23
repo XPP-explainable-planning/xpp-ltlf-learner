@@ -1,0 +1,10 @@
+F & a F b
+U a b
+G | a b
+G | b X G a
+| G a F b
+R & a b b
+R a b
+G | a F b
+G a
+F G a

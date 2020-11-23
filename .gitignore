@@ -1,0 +1,4 @@
+build/
+**/formulas.txt
+**/a.txt
+**/*.pyc
