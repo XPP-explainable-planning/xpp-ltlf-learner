@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include "cnf.hpp"
+#include <sys/resource.h>
 #include <vector>
 #include <map>
 #include <set>
@@ -96,6 +97,13 @@ void findAndReplaceAll( std::string& data,
 
 
 int main(int argc, char* argv[]) {
+
+    struct rlimit limit;
+    limit.rlim_cur = RLIM_INFINITY;
+    limit.rlim_max = 2 * 1024 * 1024 * 1024;  // 2 GB
+    if (0 != setrlimit(RLIMIT_AS, &limit)) {
+        return 1;
+    }
 
 
     vector<string> ignorePredicates;
