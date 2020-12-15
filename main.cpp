@@ -98,21 +98,24 @@ void findAndReplaceAll( std::string& data,
 
 int main(int argc, char* argv[]) {
 
+    long max_limit = 2 * 1024 * 1024 * 1024l;  // 2 GB
     struct rlimit limit;
     limit.rlim_cur = RLIM_INFINITY;
-    limit.rlim_max = 2 * 1024 * 1024 * 1024;  // 2 GB
+    limit.rlim_max = max_limit;
     if (0 != setrlimit(RLIMIT_AS, &limit)) {
         return 1;
     }
 
 
     vector<string> ignorePredicates;
+    /*
     ignorePredicates.push_back("connected");
     ignorePredicates.push_back("fuel");
     ignorePredicates.push_back("can_traverse");
     ignorePredicates.push_back("visible");
     ignorePredicates.push_back("ecost");
     ignorePredicates.push_back("energy");
+     */
    // cout << "Ignoring Predicates: ";
    /* for (string s : ignorePredicates) {
         cout << s << "  " ;
@@ -128,9 +131,10 @@ int main(int argc, char* argv[]) {
     bool random = false;
     bool statistics = false;
     int formulaCount = -1;
-    int permutations = -1;
+    int max_num_pos_examples = -1;
+    int max_num_neg_examples = -1;
     bool testOnly = false;
-    int numPermutations = 2000;
+
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i],"-g") == 0) {
             generate = true;
@@ -168,13 +172,13 @@ int main(int argc, char* argv[]) {
             char* count = argv[(i++)+1];
             formulaCount = atoi(count);
         }
-        if (strcmp(argv[i] , "--permutations") == 0) {
+        if (strcmp(argv[i] , "--max-num-pos-examples") == 0) {
             char* count = argv[(i++)+1];
-            permutations = atoi(count);
+            max_num_pos_examples = atoi(count);
         }
-        if (strcmp(argv[i] , "--permutation-count") == 0) {
+        if (strcmp(argv[i] , "--max-num-neg-examples") == 0) {
             char* count = argv[(i++)+1];
-            numPermutations = atoi(count);
+            max_num_neg_examples = atoi(count);
         }
         if (strcmp(argv[i] , "--meta-operators") == 0) {
             metaOperatorFile = argv[(i++)+1];
@@ -192,20 +196,16 @@ int main(int argc, char* argv[]) {
         vector<vector<vector<string > > > goodExamples = readExamplesFromFolder(pFolder, p);
         vector<vector<vector<string > > > badExamples = readExamplesFromFolder(nFolder, p);
         vector<string> voc = p->getVocabulary();
-        int permutationsGood = permutations;
-        if (goodExamples.size() == 0) {
-            cout << "No positive Examples found" << endl;
-            return 0;
+
+        if (goodExamples.size() >= max_num_pos_examples) {
+            cout << "No enough positive Examples found" << endl;
+            return 1;
             }
-        if (badExamples.size() == 0) {
-            cout << "No negative Examples found" << endl;
-            //return 0;
+        if (badExamples.size() >= max_num_neg_examples) {
+            cout << "No enough negative Examples found" << endl;
+            return 1;
             }
-        int permutationsBad= permutations;
-        if (permutations == -1 || goodExamples.size() < permutations || badExamples.size() < permutations) {
-            permutationsGood = goodExamples.size();
-            permutationsBad = badExamples.size();
-        }
+
         int count = 0;
         int processed = 0;
         std::random_device rd;
@@ -218,59 +218,55 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < badExamples.size(); i++){
             neg_examples.push_back(i);
         }
-        for (int processed = 0; processed < numPermutations; processed++) {
-                std::shuffle(pos_examples.begin(), pos_examples.end(), g);
-                std::shuffle(neg_examples.begin(), neg_examples.end(), g);
-                bool learned = false;
-                int currentSize = 1;
-                //cout << "Learning..." << endl;
-                vector<string> learnedFormulas;
-                if (!metaOperators.empty()){
-                    currentSize++;
-                    formulaSize = 3;
-                }
-                while (!learned && currentSize++<formulaSize){
-                    count++;
-                   /* cout << count << ": (";
-                    for (int p : posComb)
-                        cout << p << ", ";
-                    cout << ")  &  (";
-                    for (int p : badComb)
-                        cout << p << ", ";
-                    cout << ")" << endl;
-                    */
-                    cout << "starting with size " << currentSize << endl;
-                    Cnf* cnf = new Cnf(currentSize, voc, metaOperators, false);
-                    for (int i = 0; i < permutationsGood; i++) {
-                        cnf->addPositiveExample(goodExamples.at(pos_examples.at(i)));
-                    }
-                    for (int i = 0; i < permutationsBad; i++) {
-                        cnf->addNegativeExample(badExamples.at(neg_examples.at(i)));
-                    }
-                    learnedFormulas = cnf->learnFormulas(formulaCount);
-                    delete(cnf);
-                    if (learnedFormulas.size())
-                        learned = true;
-                }
-                for (string s : learnedFormulas) {
-                   // cout << s << endl;
-                    map<string, set<int>>::iterator found = mymap.find(s);
-                    if (found == mymap.end()){
-                        set<int> temp;
-                        for (int p = 0; p < permutationsGood; p++) {
-                            temp.insert(pos_examples.at(p));
-                        }
-                        mymap.insert(make_pair(s,temp));
-                    } else {
-                        for (int p = 0; p < permutationsGood; p++) {
-                            found->second.insert(pos_examples.at(p));
-                        }
-                    }
-                }
-                processed++;
-                if (processed >= numPermutations)
-                    break;
+
+
+        bool learned = false;
+        int currentSize = 1;
+        //cout << "Learning..." << endl;
+        vector<string> learnedFormulas;
+        if (!metaOperators.empty()){
+            currentSize++;
+            formulaSize = 3;
+        }
+        while (!learned && currentSize++<formulaSize){
+            count++;
+           /* cout << count << ": (";
+            for (int p : posComb)
+                cout << p << ", ";
+            cout << ")  &  (";
+            for (int p : badComb)
+                cout << p << ", ";
+            cout << ")" << endl;
+            */
+            cout << "starting with size " << currentSize << endl;
+            Cnf* cnf = new Cnf(currentSize, voc, metaOperators, false);
+            for (int i = 0; i < max_num_pos_examples; i++) {
+                cnf->addPositiveExample(goodExamples.at(pos_examples.at(i)));
             }
+            for (int i = 0; i < max_num_neg_examples; i++) {
+                cnf->addNegativeExample(badExamples.at(neg_examples.at(i)));
+            }
+            learnedFormulas = cnf->learnFormulas(formulaCount);
+            delete(cnf);
+            if (learnedFormulas.size())
+                learned = true;
+        }
+        for (string s : learnedFormulas) {
+           // cout << s << endl;
+            map<string, set<int>>::iterator found = mymap.find(s);
+            if (found == mymap.end()){
+                set<int> temp;
+                for (int p = 0; p < max_num_pos_examples; p++) {
+                    temp.insert(pos_examples.at(p));
+                }
+                mymap.insert(make_pair(s,temp));
+            } else {
+                for (int p = 0; p < max_num_neg_examples; p++) {
+                    found->second.insert(pos_examples.at(p));
+                }
+            }
+        }
+
         ofstream outfile;
         outfile.open("formulas.txt", fstream::out);
         cout << "################ Learned Formulas  ################"<< endl;
@@ -315,15 +311,15 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i < examples.size(); i++) {
             exampleInts.push_back(i);
         }
-        int permutationsGood = permutations;
-        if (examples.size() == 0) {
+        int permutationsGood = max_num_pos_examples;
+        if (examples.size() >= max_num_pos_examples) {
             cout << "No positive Examples found" << endl;
             return 0;
             }
-        cout << permutations << endl;
+        cout << max_num_pos_examples << endl;
         assert(permutationsGood * 2 < examples.size());
         int count = 0;
-        for (int pCount = 0; pCount < numPermutations; pCount++) {
+        for (int pCount = 0; pCount < max_num_pos_examples; pCount++) {
             bool learned = false;
             int currentSize = 1;
             if (! metaOperators.empty()){
@@ -339,11 +335,11 @@ int main(int argc, char* argv[]) {
                 vector<string> learnedFormulas;
                     count++;
                     Cnf* cnf = new Cnf(currentSize, remappedVoc,metaOperators, true);
-                    for (int i = 0; i < permutations; i++) {
+                    for (int i = 0; i < max_num_pos_examples; i++) {
                         cnf->addPositiveExample(mappedExamples.at(exampleInts.at(i)));
                     }
-                    for (int i = 0; i < permutations; i++) {
-                        cnf->addNegativeExample(mappedExamples.at(exampleInts.at(i + permutations)));
+                    for (int i = 0; i < max_num_neg_examples; i++) {
+                        cnf->addNegativeExample(mappedExamples.at(exampleInts.at(i + max_num_pos_examples)));
                     }
                     learnedFormulas = cnf->learnFormulas(25);
                     delete(cnf);
