@@ -2,13 +2,20 @@
 #include "definitions.hpp"
 #include <iostream>
 
-
+/**
+ *  Inserts a new Variable into the datastructure based on the Type of the variable
+ *
+ *  @param the new Variable
+ *  @return the id 
+ */
     int VarsDict::addVariable(Variable* variable) {
+        //The SAT solver encodes true for a variable as even and false as uneven, so we need 2 ids for each variable
         variable->id =1 + 2 * lookupTable.size() ;
         lookupTable.push_back(variable);
         int exampleId = variable->exampleId;
         int timestep = variable->timestep;
         int skeletonId = variable->skeletonId;
+        //insert ETS Type (exampleId,timestep, skeletonId)
         if (variable->varType == VarType::ETS){
             if (examples.find(exampleId) == examples.end()){
                 unordered_map<int, unordered_map<int,Variable*> > timestepMap;
@@ -21,6 +28,11 @@
             examples[exampleId][timestep][skeletonId] = variable;
             
         }
+        /**insert ST Type (skeletonId,skeletonType)
+         *
+         *  Example for R a b, this defines the skeletontype Realease for the first node
+         *
+         */
         else if (variable->varType == VarType::ST){
             if (skeletons.find(skeletonId) == skeletons.end()){
                 unordered_map<int,Variable*> variables; 
@@ -29,6 +41,13 @@
             skeletons[skeletonId][variable->skeletonType] = variable;
     
         }
+         
+        /**
+         * insert ST Type (skeletonId,skeletonId')
+         *
+         * Example for R a b , this creates the connection between the skeleton for release and the subformula, literal a
+         *
+         */
         else if (variable->varType == VarType::alpha){
             if (alphas.find(skeletonId) == alphas.end()){
                 unordered_map<int,Variable*> variables; 
@@ -36,6 +55,12 @@
             }
             alphas[skeletonId][variable->alpha] = variable;
         }
+        /**
+         * insert ST Type (skeletonId,skeletonId')
+         *
+         * Example for R a b , this creates the connection between the skeleton for realease and the subformula, literal b
+         *
+         */
         else if (variable->varType == VarType::beta){
             if (betas.find(skeletonId) == betas.end()){
                 unordered_map<int,Variable*> variables; 
@@ -45,6 +70,12 @@
             betas[skeletonId][variable->beta] = variable;
     
         }
+        /**
+         *  insert skliteral(skletonid,literal)
+         *
+         *  Example for R a b , this can define the literal a for the subformula a
+         *
+         */
         else if (variable->varType == VarType::skliteral){
             if (skliterals.find(skeletonId) == skliterals.end()){
                 unordered_map<int,Variable*> variables; 
@@ -52,6 +83,11 @@
             }
             skliterals[skeletonId][variable->literal] = variable;
         }
+
+        /**
+         *  For metaOperators, for example G ||, we may need additional run variables to keep track, since compressed several operators to one.
+         *
+         */
         else if (variable->varType == VarType::metaETS){
             if (metaETS.find(exampleId) == metaETS.end()){
                 unordered_map<int, unordered_map<int,unordered_map<int,Variable*> > > timestepMap;
@@ -68,6 +104,9 @@
             //alpha is here the position in the internal mapping inside of the meta operator
             metaETS[exampleId][timestep][skeletonId][variable->alpha] = variable;
         } 
+        /**
+         *  For metaoperators we may need additional SkeletonVariables since we have multiple operators in one
+         */
         else if (variable->varType == VarType::metaST){
             if (metaSkeletons.find(skeletonId) == metaSkeletons.end()){
                 unordered_map<int,Variable*> variables; 
@@ -78,6 +117,10 @@
 
         return variable->id;
     }
+
+/**
+ *  Getters for the datastructure.
+ */
 
     int VarsDict::getVarEtsId(int exampleId, int timestep, int skeletonId){
         return examples[exampleId][timestep][skeletonId]->id;

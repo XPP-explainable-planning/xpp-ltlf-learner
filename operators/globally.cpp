@@ -1,5 +1,11 @@
 #include "operator.hpp"
 
+
+/**
+ *  
+ *  Implementation of the LTL Operator Globally
+ *
+ */ 
 class AlwaysOperator : Operator {
 
     public:
@@ -25,6 +31,21 @@ class AlwaysOperator : Operator {
             return "printed unaty as binary";
         }
 
+
+        /**
+         *  Creates Clauses for each timestep in the positive example for each timeStep.
+         *
+         *  in short such that "Globally" holds, we have a & XG a
+         *  
+         *  @param exampleId - the id of the current positive plan
+         *  @param timestep - the current timestep in the plan
+         *  @param skeletonId - the skeletonId for the node where we implement the operator
+         *  @param maxLength - the maximal number of steps in the plan
+         *  @param fmlSize - the maximum formula size 
+         *  @param dict - the dictionary to get information about the variables.
+         *
+         *
+         */
         vector<vector<int>> genClauses(int exampleId, int timeStep, int skeletonId, int maxLength, int fmlSize, VarsDict dict) {
             vector<vector<int> > clauses;
             int varETSId = dict.getVarEtsId(exampleId, timeStep, skeletonId);
@@ -43,6 +64,21 @@ class AlwaysOperator : Operator {
             return clauses;
         }
 
+
+        /**
+         *  Creates Clauses for each timestep in the negative example for each timeStep.
+         *
+         *  in short such that "Globally" does not hold, we have that at either !a | XF!a
+         *  
+         *  @param exampleId - the id of the current positive plan
+         *  @param timestep - the current timestep in the plan
+         *  @param skeletonId - the skeletonId for the node where we implement the operator
+         *  @param maxLength - the maximal number of steps in the plan
+         *  @param fmlSize - the maximum formula size 
+         *  @param dict - the dictionary to get information about the variables.
+         *
+         *
+         */
         vector<vector<int>> genDualClauses(int exampleId, int timeStep, int skeletonId, int maxLength, int fmlSize, VarsDict dict) {
             vector<vector<int> > clauses;
             int varETSId = dict.getVarEtsId(exampleId, timeStep, skeletonId);

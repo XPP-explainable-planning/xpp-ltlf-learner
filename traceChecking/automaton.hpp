@@ -8,7 +8,11 @@
 using namespace std;
 
 
-
+/**
+ *
+ *  Basic automaton structure for checking if a plan is satisfied by a formula
+ *
+ */ 
 class Automaton {
     
     public:

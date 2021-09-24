@@ -1,5 +1,9 @@
 #include "operator.hpp"
 
+/**
+ *  Operator implementation of the Operator Next
+ *
+ */
 class NextOperator : Operator {
 
     public:
@@ -26,6 +30,22 @@ class NextOperator : Operator {
             return "printed unaty as binary";
         }
 
+
+        /**
+         *  Creates Clauses for each timestep in the positive example for each timeStep.
+         *
+         *  in short such that "Next" holds, the subformula has to hold in the next step.
+         *  So we simply refer to a skeleton holding one higher timestep
+         *  
+         *  @param exampleId - the id of the current positive plan
+         *  @param timestep - the current timestep in the plan
+         *  @param skeletonId - the skeletonId for the node where we implement the operator
+         *  @param maxLength - the maximal number of steps in the plan
+         *  @param fmlSize - the maximum formula size 
+         *  @param dict - the dictionary to get information about the variables.
+         *
+         *
+         */
         vector<vector<int>> genClauses(int exampleId, int timeStep, int skeletonId, int maxLength, int fmlSize, VarsDict dict) {
             vector<vector<int> > clauses;
             int varETSId = dict.getVarEtsId(exampleId, timeStep, skeletonId);
@@ -47,6 +67,21 @@ class NextOperator : Operator {
             return clauses;
         }
 
+        /**
+         *  Creates dualClauses for each timestep in the negative example for each timeStep.
+         *
+         *  in short such that "Next" holds, the subformula has to hold in the next step.
+         *  So we simply refer to a skeleton holding one higher timestep
+         *  
+         *  @param exampleId - the id of the current positive plan
+         *  @param timestep - the current timestep in the plan
+         *  @param skeletonId - the skeletonId for the node where we implement the operator
+         *  @param maxLength - the maximal number of steps in the plan
+         *  @param fmlSize - the maximum formula size 
+         *  @param dict - the dictionary to get information about the variables.
+         *
+         *
+         */
         vector<vector<int>> genDualClauses(int exampleId, int timeStep, int skeletonId, int maxLength, int fmlSize, VarsDict dict) {
             vector<vector<int> > clauses;
             if (timeStep + 1 < maxLength){

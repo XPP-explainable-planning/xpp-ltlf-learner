@@ -10,12 +10,16 @@
 #include "globally.cpp"
 #include "until.cpp"
 #include "release.cpp"
-#include "globallyAnd.cpp"
-#include "sequencedVisit.cpp"
-#include "orderedSequencedVisit.cpp"
 #include "omegaOperators/operatorTemplate.hpp"
 #include "omegaOperators/metaOperator.cpp"
 
+
+/**
+ *  OperatorFactory for creating a new Operator, only based on the SkeletonType
+ *  Works as an abstraction.
+ *  
+ *
+ */ 
 Operator* createOperator(int operatorType) {
     Operator* op;
     switch (operatorType) {

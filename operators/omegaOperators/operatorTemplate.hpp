@@ -6,7 +6,10 @@
 
 using namespace std;
     
-
+/**
+ *  Variable package, used as struct to forward variable ids
+ *
+ */ 
     struct VarPackage {
         int ets;
         int st;
@@ -17,7 +20,10 @@ using namespace std;
     };
 
 
-
+/**
+ *  
+ *  TreeStructure like class for implementing the inner tree of metaoperators
+ */ 
 class OperatorTemplate {
     public: 
         OperatorTemplate(SkeletonType type, bool isUnary, int leaf):type(type),isUnary(isUnary),leaf(leaf){};

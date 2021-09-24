@@ -8,7 +8,16 @@
 
 using namespace std;
 
-
+/**
+ *  Adds transitions to the automaton
+ *  @param at - the automaton
+ *  @param current - the current state of the automaton
+ *  @param target - the target state of the automaton
+ *  @param numFacts - the number of facts of the automaton
+ *  @param mustHold - a list of facts that must hold for this transition
+ *  @param mustnotHold - a list of facts that must not hold for this transition
+ *
+ */ 
 void addTransitions(Automaton* at,int current, int target, int numFacts,
                           vector<int> mustHold, vector<int> mustNotHold) {
     
@@ -52,7 +61,16 @@ void addTransitions(Automaton* at,int current, int target, int numFacts,
     }
 }
 
-
+/**
+ *  Checks if a plan is accepted by the automaton.
+ *  Done by a simple BFS
+ *
+ *  @param at - the automaton representing an LTL formula
+ *  @param plan - a state representation of the plan
+ *  @return true if the automaton accepts this plan
+ *
+ *
+ */ 
 bool checkForTrace(Automaton* at, vector<vector<string> > plan) {
     unordered_set<int> currentLvl;   
     currentLvl.insert(at->initialState);
@@ -73,7 +91,13 @@ bool checkForTrace(Automaton* at, vector<vector<string> > plan) {
     return false;
 }
 
-
+/**
+ *  Parser for parsing an automaton from an HoaFile to our AutomatonClass
+ *  
+ *  @param filename - the filename of the automaton file
+ *  @return the automaton class representing the parsed automaton
+ *
+ */ 
 Automaton *automatonFromHoaFile(const string &filename) {
     string line;
     Automaton *automaton = nullptr;
@@ -173,9 +197,17 @@ Automaton *automatonFromHoaFile(const string &filename) {
 }
 
 
+/**
+ *  creates an automaton using ltlf2hoa with authfilt to create an automaton representing the formula,
+ *  @param formula - a stringrepresentation of the formula
+ *
+ *  @return An finite automaton representing the formula
+ *
+ */ 
 Automaton* generateAutomaton(string formula)
 {
-  string call = "ltl2tgba -C -B -D \'" + formula + "\' > a.txt";
+  string call = "python3 pathToLTLfkit/ltlf2hoa.py\'" + formula + "\' | autfilt --small -C -D -S > a.txt";
+  //
   //cout << call <<endl;
   system(call.c_str());
   return automatonFromHoaFile("a.txt");

@@ -3,6 +3,22 @@
 
 using namespace std;
 
+/**
+ *  The Clause for Next, similar to the clause generation in the NextOperator Class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ *
+ *
+ */ 
     vector<vector<int> > genClausesTemplateNext(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         if (timeStep == maxLength - 1) {
@@ -16,6 +32,22 @@ using namespace std;
     }
 
 
+/**
+ *  The DualClause for Next, similar to the clause generation in the NextOperator Class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ *
+ *
+ */ 
     vector<vector<int> > genDualClausesTemplateNext(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         if (timeStep + 1 < maxLength){
@@ -25,6 +57,22 @@ using namespace std;
     }
 
 
+/**
+ *  The clause generation for an eventually template, similar to the clause generation in the eventually operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ *
+ *
+ */ 
     vector<vector<int> > genClausesTemplateEventually(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         if (timeStep == maxLength - 1) {
@@ -37,6 +85,23 @@ using namespace std;
         return clauses;
     }
 
+
+/**
+ *  The dual clause generation for an eventually template, similar to the clause generation in the eventually operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ *
+ *
+ */ 
     vector<vector<int> > genDualClausesTemplateEventually(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         vector<int> clause = {-vars.ets, -vars.st, vars.alpha};
@@ -49,6 +114,22 @@ using namespace std;
     }
 
 
+/**
+ *  The clause generation for an globally template, similar to the clause generation in the globally operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ *
+ *
+ */ 
     vector<vector<int> > genClausesTemplateAlways(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         vector<int> clause  {-vars.ets, -vars.st, vars.alpha};
@@ -60,6 +141,22 @@ using namespace std;
         return clauses;
     }
 
+/**
+ *  The dual clause generation for an globally template, similar to the clause generation in the globally operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ *
+ *
+ */ 
     vector<vector<int> > genDualClausesTemplateAlways(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         if (timeStep == maxLength - 1) {
@@ -73,6 +170,22 @@ using namespace std;
     }
 
 
+/**
+ *  The clause generation for an and template, similar to the clause generation in the and-operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ *
+ *
+ */ 
     vector<vector<int> > genClausesTemplateAnd(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         vector<int> clause1  {-vars.ets, -vars.st, vars.alpha};
@@ -82,6 +195,22 @@ using namespace std;
         return clauses;
     }
 
+/**
+ *  The dual clause generation for an and template, similar to the clause generation in the and-operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ *
+ *
+ */ 
     vector<vector<int> > genDualClausesTemplateAnd(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         vector<int> clause1  {-vars.ets, -vars.st, vars.alpha, vars.beta};
@@ -89,6 +218,23 @@ using namespace std;
         return clauses;
     }
 
+
+/**
+ *  The clause generation for an or-template, similar to the clause generation in the or-operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ *
+ *
+ */ 
     vector<vector<int> > genClausesTemplateOr(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         vector<int> clause  {-vars.ets, -vars.st, vars.alpha, vars.beta};
@@ -96,6 +242,22 @@ using namespace std;
         return clauses;
     }
 
+/**
+ *  The dual clause generation for an or-template, similar to the clause generation in the or-operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ *
+ *
+ */ 
     vector<vector<int> > genDualClausesTemplateOr(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         vector<int> clause1  {-vars.ets, -vars.st, vars.alpha};
@@ -106,6 +268,20 @@ using namespace std;
     }
 
 
+/**
+ *  The clause generation for a release-template, similar to the clause generation in the release-operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ */ 
     vector<vector<int> > genClausesTemplateRelease(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         if (timeStep + 1 < maxLength) {
@@ -123,6 +299,21 @@ using namespace std;
         return clauses;
     }
 
+
+/**
+ *  The dual clause generation for a release-template, similar to the clause generation in the release-operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ */ 
     vector<vector<int> > genDualClausesTemplateRelease(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         if (timeStep + 1 < maxLength) {
@@ -142,6 +333,20 @@ using namespace std;
     }
 
 
+/**
+ *  The clause generation for an until-template, similar to the clause generation in the until-operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ */ 
     vector<vector<int> > genClausesTemplateUntil(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         if (timeStep + 1 < maxLength) {
@@ -158,6 +363,20 @@ using namespace std;
     }
 
 
+/**
+ *  The dual clause generation for an until-template, similar to the clause generation in the until-operator class
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ */ 
     vector<vector<int> > genDualClausesTemplateUntil(int timeStep, int maxLength, VarPackage vars){
         vector<vector<int> > clauses;
         if (timeStep + 1 < maxLength) {
@@ -175,6 +394,21 @@ using namespace std;
     }
 
 
+/**
+ *  The clause generation for an operator template at a specific position,
+ *  switches over the skeleton type and then calls the skeletontype-tailored function
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ */ 
     vector<vector<int> > genClausesForTemplates(SkeletonType type,int timeStep, int maxLength, VarPackage vars) {
         switch(type) {
                
@@ -207,6 +441,22 @@ using namespace std;
         assert(false);
    }
 
+
+/**
+ *  The dual clause generation for an operator template at a specific position,
+ *  switches over the skeleton type and then calls the skeletontype-tailored function
+ *
+ *  @param timeStep - the current timestep of the plan
+ *  @param maxLength - th number of steps in the plan
+ *  @param vars - a struct containing all important variable ids such as 
+ *      - ets - the current evaluation of the inner node 
+ *      - st - the skeleton type variable for the metaoperator at the current skeleton id position
+ *      - alpha - the variable refering to the run of the alphasubformula of the current timestep
+ *      - beta - the variable refering to the run of the betasubformula of the current timestep
+ *      - etsprime - the variable refering to the evaluation in the next timestep
+ *      - alphaprime - the variable refering to the evaluation of alpha in the next timestep
+ *
+ */ 
     vector<vector<int> > genDualClausesForTemplates(SkeletonType type,int timeStep, int maxLength, VarPackage vars) {
         switch(type) {
                

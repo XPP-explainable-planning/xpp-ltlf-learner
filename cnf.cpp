@@ -3,7 +3,9 @@
 #include <string>
 #include <iostream>
 
-    
+    /**
+     *  Print for seeing statistics like number of clauses, etc.
+     */ 
     void Cnf::printStatistics() {
         cout << "############# Statistics #############" << endl;
         cout << "Num Variables after Init: " << numVariablesAfterInit << endl;
@@ -29,8 +31,6 @@
     }
     
     void Cnf::printTable() {
-
-
         this->numClausesBeforeLearning = this->clauses.size();
         int traceVariables = this->dict.lookupTable.size() - numVariablesAfterInit;
         float variablesPerTrace = traceVariables / this->numExamples;
@@ -38,9 +38,17 @@
         float clausesPerTrace = traceClauses / this->numExamples;
         cout << this->dict.vocabulary.size() << " & " << this->fmlSize-1 << " & " << this->traceLength << " & " << numVariablesAfterInit << " & " << numClausesAfterInit << " & " << variablesPerTrace << " & " << clausesPerTrace << "\\\\" <<endl;
 
-
         }
 
+    /**
+     *  
+     *  Constructor for the Learner, initializes the Datastructure, creates initial variables for operators
+     *
+     *  @param fmlSize the upper limit of the formulasize, R a b has a formula size of 3 (based on the number of nodes u need to display them in the treestructure)
+     *  @param vocabulary - should contain all the facts/actions which occured in the plans during parsing
+     *  @param metaOperatos - in case one defined metaOperators, the list should conatin all
+     *  @param to choose either to print "a R b" or "R a b" may be important for further postprocessing 
+     */
     Cnf::Cnf(int fmlSize, vector<string> vocabulary, vector<Operator*> metaOperators, bool normal){
         initOperators(metaOperators);
         this->fmlSize = fmlSize;
@@ -54,6 +62,15 @@
         this->printNormal = normal;
     }
     
+
+    /**
+     *  Initialiazes the skeleton node with each possible LTL-Operator.
+     *
+     *  @param metaOperators - if defined use metaOperators only
+     *                          otherwise use ordinary ones
+     *
+     *
+     */
     void Cnf::initOperators(vector<Operator*> metaOperators){
         AllSkeletonTypes.push_back(SkeletonType::literal);
         if (!metaOperators.empty()) {
@@ -66,47 +83,55 @@
             this->additionalVarPerExample = maxVar;
             return;
         }
+        //can be done via list if wanted
+        // for (int type = 2; type < 10; type++){
+        //      operators.push_back(createOperator(type));
+        //      AllSkeletonTypes.push_back(type);
+        // }
         operators.push_back(createOperator(SkeletonType::always));
         AllSkeletonTypes.push_back(SkeletonType::always);
-       // 
+       
+
        operators.push_back(createOperator(SkeletonType::eventually));
         AllSkeletonTypes.push_back(SkeletonType::eventually);
-       //// 
+       
+
         operators.push_back(createOperator(SkeletonType::land));
          AllSkeletonTypes.push_back(SkeletonType::land);
 
+
        operators.push_back(createOperator(SkeletonType::until));
         AllSkeletonTypes.push_back(SkeletonType::until);
-       //
+       
+
         operators.push_back(createOperator(SkeletonType::release));
         AllSkeletonTypes.push_back(SkeletonType::release);
-       // 
+       
+
        operators.push_back(createOperator(SkeletonType::lor));
        AllSkeletonTypes.push_back(SkeletonType::lor);
-       // 
-       // 
+        
         operators.push_back(createOperator(SkeletonType::next));
         AllSkeletonTypes.push_back(SkeletonType::next);
         
        //operators.push_back(createOperator(SkeletonType::weaknext));
        //AllSkeletonTypes.push_back(SkeletonType::weaknext);
-      
-       //operators.push_back(createOperator(SkeletonType::globallyAnd));
-       //AllSkeletonTypes.push_back(SkeletonType::globallyAnd);
-       
-       //operators.push_back(createOperator(SkeletonType::sequencedEventually));
-       //AllSkeletonTypes.push_back(SkeletonType::sequencedEventually);
-         //AllSkeletonTypes.push_back(10);
-        // operators.push_back(createOperator(10));
-       //
-       //operators.push_back(createOperator(SkeletonType::orderedSequenced));
-       //AllSkeletonTypes.push_back(SkeletonType::orderedSequenced);
     }
 
+    /**
+     *  For printing the formula
+     *  
+     *  prepends a ! to the litaral
+     *
+     */
     string Cnf::negatePredicate(string s){
         return "! " + s;
     }
     
+
+    /**
+     *  used for debugging, prints a cnfclause
+     */
     void printClause(vector<int> clause) {
             /*cout << "[";
             for (int v : clause){ 
@@ -118,6 +143,14 @@
             cout<<"]" << endl;*/
         }
     
+
+    /**
+     *  for Recovering the Operator from the SAT Solution
+     *  
+     *  @param type - the type of the operator set in the skeleton
+     *  @return a string description of the operator
+     *
+     */ 
     Operator* Cnf::getOperatorForType(int type){
         for (Operator* op :operators){
             if (op->getOperator() == type){
@@ -127,15 +160,25 @@
         assert(false);
     }
 
-    void Cnf::setOperators(vector<SkeletonType> ops) {
-    }
-
+    /**
+     *  Entry Point for the formula recovery
+     *  Iterative approach, starting with the first skeleton and then iterative.
+     *  @param model - the solution for the cnf-encoding
+     *  @return the learned formula as string
+     *
+     */ 
     string Cnf::recoverFormulafromModel(vector<int> model){
         int curSkeletonId = 0;
         string formula = skeletonToFormula(model, curSkeletonId);
         return formula; 
     }
 
+    /**
+     *  Iterative function, called for each skeletonId eventually
+     *  @param model - the solution from the SAT Solver
+     *  @param curSkeletonId - the current position in the formula tree
+     *
+     */
     string Cnf::skeletonToFormula(vector<int> model, int curSkeletonId){
         int curSkeletonType = getSkeletonType(model, curSkeletonId);
         
@@ -159,7 +202,16 @@
 
         return "NO Type found";
     }
-
+    
+    /**
+     *  Returns the skeletonType - E.g. LTL Operator/Literal
+     *
+     *  @param model - the solution of the SAT Problem
+     *  @curSkeletonId the current node in the formula tree
+     *
+     *  @return the skeletonType
+     *
+     */
     int Cnf::getSkeletonType(vector<int> model, int curSkeletonId){
         for (const auto skeletonType : AllSkeletonTypes) {
             int varStId = dict.getVarSTId(curSkeletonId, skeletonType);
@@ -171,7 +223,17 @@
         }      
         assert(false);
     }
-
+    
+    /**
+     *  Resolves the alpha successor of the current node
+     *  returns the skeletonId of it, for example for R a b, it returns the id pointing to skeleton a.
+     *
+     *  @param model - the solution of the SAT problem
+     *  @param skeletonId - the current SkeltonId
+     *  @return the skeletonId of the alpha tree.
+     *
+     *
+     */
     int Cnf::getAlphaId(vector<int> model, int skeletonId){
         for (int alphaSkeletonId= skeletonId + 1; alphaSkeletonId < fmlSize; alphaSkeletonId++){
             int alphaId = dict.getVarAlphaId(skeletonId, alphaSkeletonId);
@@ -185,6 +247,15 @@
     }
 
 
+    /**
+     *  Resolves the beta successor of the current node
+     *  returns the skeletonId of it, for example for R a b, it returns the id pointing to skeleton b.
+     *
+     *  @param model - the solution of the SAT problem
+     *  @param skeletonId - the current SkeltonId
+     *  @return the skeletonId of the beta tree.
+     *
+     */
     int Cnf::getBetaId(vector<int> model, int skeletonId){
         for (int betaSkeletonId= skeletonId + 2; betaSkeletonId < fmlSize; betaSkeletonId++){
             int betaId = dict.getVarBetaId(skeletonId, betaSkeletonId);
@@ -196,7 +267,16 @@
         }      
         assert(false);       
     }
-
+    
+    /**
+     *  Resolves the fact/action of a skeleton.
+     *
+     *  @param model - the solution of the SAT problem 
+     *  @param skeletonId the id of the current node
+     *
+     *  @return the literal(action/fact) which is set for this node
+     *
+     */
     string Cnf::getLiteral(vector<int> model, int skeletonId){
         for (int i = 0; i < this->dict.vocabulary.size();i++) {
             int literal = i + 1;
@@ -219,7 +299,13 @@
     
     
 
-
+    /**
+     *  
+     *  creates additional variables and clauses for the given positiveExample
+     *
+     *  @param positiveExample - the plan with all his statefacts or actions
+     *
+     */
     void Cnf::addPositiveExample(vector<vector<string> > positiveExample){
         this->traceLength = positiveExample.size();
         genVariablesForExample(positiveExample);
@@ -228,6 +314,13 @@
         numExamples++;
     }
 
+    /**
+     *  
+     *  creates additional variables and clauses for the given negative Example
+     *
+     *  @param negativeExample - the plan with all his statefacts or actions
+     *
+     */
     void Cnf::addNegativeExample(vector<vector<string> > negativeExample){
         this->traceLength = negativeExample.size();
         genVariablesForExample(negativeExample);
@@ -236,7 +329,13 @@
         numExamples++;
     }
 
-
+    /**
+     *  Creates initial variables, e.g. 
+     *      1. Variables for all operator types on each node
+     *      2. The connections between the skeleton nodes 
+     *      3. Each possible Literal on the skeleton nodes
+     *
+     */
     void Cnf::genInitialVariables(){
         // these formulae are var(s,type) where 
         // s is a skeleton_id and
@@ -270,6 +369,11 @@
             }
         }
         
+        /**
+         *  
+         *  Creates a variable for each literal on each possible skeleton node
+         *
+         */
         for (int skeletonId = 0; skeletonId < fmlSize; skeletonId++){
             for (int varCount = 0; varCount < this->dict.vocabulary.size(); varCount++){
                 Variable* var = new Variable(VarType::skliteral);
@@ -290,7 +394,23 @@
 
         numVariablesAfterInit = dict.lookupTable.size();
     }
-
+    
+    /**
+     *  Process for learning one formula,
+     *  Instantiates the SAT solver and forwards the clauses to the SAT solver.
+     *  Then invokes minisat and recovers the learned LTL formula.
+     *  Besides this learns a clause forbidding learning the same formula again(
+     *  clause is built during formula recovery)
+     *
+     *      ##### Improvement idea ####
+     *          Improve Clause learning, at the moment the explicit order is forbidden
+     *          for example, a & b is forbidden, but b & a can still be learned for once
+     *          -> Improve clauselearning with regard to the commutativity and equivalence 
+     *          of LTL
+     *
+     *
+     *  @return formula as string
+     */ 
     string Cnf::learnFormula() {
         string s ="";
         Minisat::Solver solver = Solver();
@@ -326,6 +446,16 @@
         return s;
     }
 
+
+    /**
+     *  For learning multiple formulas for the same problem 
+     *  
+     *  @param formulaCount - the number of formulas to learn, 
+     *      if set to -1, learn all possible formulas
+     *
+     *  @return a vector containing all formulas
+     *
+     */ 
     vector<string> Cnf::learnFormulas(int formulaCount){
         bool infinite = formulaCount == -1;
         int count = 0;
@@ -333,13 +463,6 @@
         vector<string> formulas;
         string formula = learnFormula();
         
-       // for (vector<int> v : this->clauses){
-       //     for (int i : v) {
-       //         cout << i << " ";
-       //     }
-       //     cout << endl;
-       // }
-        cout << "Num Clauses: " << this->clauses.size() << "  Variables: " << this->dict.lookupTable.size() << endl;
         while ((formula.compare("") != 0 && (infinite || count < formulaCount))){
             cout << "learned Fromulas: " << count << endl;
             formulas.push_back(formula);
@@ -349,10 +472,17 @@
         return formulas;
     }
 
-
+    /**
+     *  Support function for clause generation
+     *  enforces that atMost one will become true 
+     *
+     *  @param ids - the variables, where at most one variable should be satisfied
+     *
+     */ 
     void Cnf::atMostOne(vector<int> ids){
         for (int i = 0; i < ids.size(); i++) {
             for (int j = i + 1; j < ids.size(); j++){
+                //pairwise mutexes
                 vector<int> newClause  {- ids.at(i), - ids.at(j)};
                 printClause(newClause);
                 clauses.push_back(newClause);
@@ -360,12 +490,29 @@
         }
     }
 
+    /**
+     *  Support function for clause generation
+     *  enforces that exatly one Variable will become true 
+     *
+     *  @param ids - the variables, where exactly one variable should be satisfied
+     *
+     */ 
     void Cnf::exactlyOne(vector<int> ids){
         atMostOne(ids);
         printClause(ids);
         clauses.push_back(ids);
     }
 
+    /**
+     *  Initial clause generation, enforcing:
+     *
+     *  Exactly One SkeletonType per node
+     *  Exactly One Alpha per node
+     *  Exactly One Beta per node
+     *  Atmost One Literal per node
+     *  Force Binary starting at size 3
+     *  Force MetaOperators starting at Node 0.
+     */ 
     void  Cnf::genInitialClauses() {
         //oneof (s, type)
         for (int skeletonId = 0; skeletonId < fmlSize; skeletonId ++){
@@ -441,33 +588,19 @@
                 }           
             }
         }
-
-        /*for (int skeletonId = fmlSize -2; skeletonId < fmlSize; skeletonId++){
-            for (Operator* op : operators){
-                if (op->isBinary()){
-                    vector<int> varST;
-                    varST.push_back(- dict.getVarSTId(skeletonId, op->getOperator()));
-                    printClause(varST);
-                    clauses.push_back(varST);
-                }
-            }
-        }
-
-        //force not to have next and weaknext, globally, eventually operators with skeleton_id >= fml_len - 1
-        for (int skeletonId = fmlSize -1; skeletonId < fmlSize; skeletonId++) {
-            for (Operator* op : operators){
-                if (!op->isBinary()){
-                    vector<int> varST;
-                    varST.push_back(- dict.getVarSTId(skeletonId, op->getOperator()));
-                    printClause(varST);
-                    clauses.push_back(varST);
-                }
-            }
-        }*/
     }
 
 
-
+    /**
+     *  Generates Variable to encode an example Plan
+     *
+     *  ETS Variable for each skeleton and timestep, will be used to track if the 
+     *  plan holds for the skeleton
+     *  In case of meta variables, the same happens again.
+     *
+     *  @param example - the example plan, for which variables are generated
+     *
+     */ 
     void Cnf::genVariablesForExample(vector<vector<string> > example) {
         int exampleId = numExamples;
          for (int timeStep = 0; timeStep < example.size(); timeStep++) {
@@ -491,13 +624,19 @@
                 }   
             }
        }
-      /*for (int skeletonId = 0; skeletonId < fmlSize; skeletonId++) {
-            for (Operator* op : operators) {
-                op->generateAdditionalVarsForExample(exampleId, skeletonId, example.size(), &dict);
-            }
-         }*/
     }
 
+
+    /**
+     *
+     *  Clause generation for an positive Plan (plan for which the learned formula is satisfied)
+     *
+     *  @param example - the plan 
+     *
+     *  Generates clauses for each possible operator, which implement the behavior for each timestep.
+     *  Generates clauses checking the Literals in each timestep
+     *
+     */
     void Cnf::genSkeletonClausesForPosExample(vector<vector<string> > example){
         int exampleId = numExamples;
         vector<int> varETSId;
@@ -524,6 +663,16 @@
     }
 
 
+    /**
+     *
+     *  Clause generation for an negative Plan (plan for which the learned formula is dissatisfied)
+     *
+     *  @param example - the plan 
+     *
+     *  Generates clauses for each possible operator, which implement the inverted behavior for each timestep.
+     *  Generates clauses checking the Literals in each timestep
+     *
+     */
     void Cnf::genSkeletonClausesForNegExample(vector<vector<string> > example){
         int exampleId = numExamples;
         vector<int> varETSId;
@@ -548,7 +697,17 @@
             }
         }
     }
-
+    
+    /**
+     *  Generates a literal clause, checking if the Literal holds on the specific timestep.
+     *  
+     *  @param exampleId - the id of the example plan
+     *  @param timeStep - the position in the plan
+     *  @param skeletonId - the id of the node in the formula tree
+     *  @param observation - the facts/action that hold at this timestep.
+     *
+     *
+     */
     void Cnf::genClausesLiteral(int exampleId, int timeStep, int skeletonId, vector<string> observation) {
         int varETSId = dict.getVarEtsId(exampleId, timeStep, skeletonId);
         int varSTId = dict.getVarSTId(skeletonId, SkeletonType::literal);
@@ -578,6 +737,16 @@
     }
 
 
+    /**
+     *  Generates a dual literal clause, checking if the Literal holds on the specific timestep.
+     *  
+     *  @param exampleId - the id of the example plan
+     *  @param timeStep - the position in the plan
+     *  @param skeletonId - the id of the node in the formula tree
+     *  @param observation - the facts/action that hold at this timestep.
+     *
+     *
+     */
     void Cnf::genDualClausesLiteral(int exampleId, int timeStep, int skeletonId, vector<string> observation) {
         int varETSId = dict.getVarEtsId(exampleId, timeStep, skeletonId);
         int varSTId = dict.getVarSTId(skeletonId, SkeletonType::literal);

@@ -8,7 +8,10 @@
 
 using namespace std;
 
-
+/**
+ *  An operator parser parsing and creating the operator templates.
+ *
+ */
 class OParser {
 private:
 int currentVarId;

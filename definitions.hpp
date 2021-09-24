@@ -3,6 +3,13 @@
 
 #include <string>
 #include <assert.h>
+
+/**
+ *
+ * All possible skeletontypes, 
+ * In theory all LTLf Operators and literal
+ *
+ */ 
 enum SkeletonType {
     literal = 1,
     lor = 2,
@@ -15,7 +22,13 @@ enum SkeletonType {
     always = 9,
 };
 
-
+/**
+ *  Print function for Operators
+ *  
+ *  @param type - the LTL Operator as SkeletonType
+ *  @return string representation of the Operator
+ *
+ */ 
 static std::string printSkeletonType(SkeletonType type) {
     switch (type){
         case SkeletonType::lor : return "|| ";
@@ -30,6 +43,12 @@ static std::string printSkeletonType(SkeletonType type) {
     }
 }
 
+
+/**
+ *  Different possible Variable Types,
+ *  differentiating on the usecase of the Variable
+ *
+ */ 
 enum VarType{
     ETS = 1,
     ST = 2,

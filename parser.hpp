@@ -6,12 +6,18 @@
 #include <unordered_set>
 using namespace std;
 
+
+/**
+ *  The parser utilities, for parsing actionbased or factbased plans.
+ *
+ */
 class Parser {
     private: 
         bool stateBased;
         vector<string> ignorePredicates;
         unordered_set<string> vocabulary;
     public: 
+
     bool checkIgnore(string current);
     vector<string> getVocabulary();  
     Parser(bool stateBased, vector<string> ignorePredicates):stateBased(stateBased),ignorePredicates(ignorePredicates){}

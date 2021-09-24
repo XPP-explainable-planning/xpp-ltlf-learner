@@ -1,5 +1,12 @@
 #include "operator.hpp"
 
+
+/**
+ *
+ * The implementation of the LTL operator "OR"
+ *
+ *
+ */ 
 class OrOperator : public Operator {
 
     public:
@@ -24,7 +31,22 @@ class OrOperator : public Operator {
                 return "( " + lhs + " | " + rhs + " )";
             return "|| " + lhs + " " + rhs;
         }
+        
 
+        /**
+         *  Creates Clauses for each timestep in the positive example for each timeStep.
+         *
+         *  in short such that "OR" holds, one of subformulas has to hold, so either alpha and beta runs have to be satisfied
+         *  
+         *  @param exampleId - the id of the current positive plan
+         *  @param timestep - the current timestep in the plan
+         *  @param skeletonId - the skeletonId for the node where we implement the operator
+         *  @param maxLength - the maximal number of steps in the plan
+         *  @param fmlSize - the maximum formula size 
+         *  @param dict - the dictionary to get information about the variables.
+         *
+         *
+         */
         vector<vector<int>> genClauses(int exampleId, int timeStep, int skeletonId, int maxLength, int fmlSize, VarsDict dict) {
             vector<vector<int> > clauses;
             int varETSId = dict.getVarEtsId(exampleId, timeStep, skeletonId);
@@ -41,7 +63,21 @@ class OrOperator : public Operator {
             }
             return clauses;
         }
-
+        
+        /**
+         *  Creates Clauses for each timestep in the negative example for each timeStep.
+         *
+         *  in short such that "OR" holds, neither one of subformulas has to hold 
+         *  
+         *  @param exampleId - the id of the current positive plan
+         *  @param timestep - the current timestep in the plan
+         *  @param skeletonId - the skeletonId for the node where we implement the operator
+         *  @param maxLength - the maximal number of steps in the plan
+         *  @param fmlSize - the maximum formula size 
+         *  @param dict - the dictionary to get information about the variables.
+         *
+         *
+         */
         vector<vector<int>> genDualClauses(int exampleId, int timeStep, int skeletonId, int maxLength, int fmlSize, VarsDict dict) {
             vector<vector<int> > clauses;
             int varETSId = dict.getVarEtsId(exampleId, timeStep, skeletonId);

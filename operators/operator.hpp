@@ -8,7 +8,12 @@
 using namespace std;
 
 
-
+/**
+ *  Basic Operator interface,
+ *
+ *  allowing to define operator behavior and metaOperators in Runtime
+ *
+ */
 class Operator {
     public: 
         int addVarsPExample = 0;

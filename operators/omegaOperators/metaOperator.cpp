@@ -1,6 +1,10 @@
 #include "../operator.hpp"
 #include "operatorTemplate.hpp"
 
+/**
+ *  Generatic MetaOperator Implementation 
+ *
+ */
 class MetaOperator : public Operator {
 
         int metaType;
@@ -19,14 +23,42 @@ class MetaOperator : public Operator {
                 return 2;
         }
 
+
+        /**
+         *  Prints MetaOperator according to the Metaoperatorskeleton
+         *
+         */ 
         string printUnaryOperator(string lhs, bool normal) {
             return operatorTemplate->printMe(lhs, "ERROR", normal);
         }
 
+        /**
+         *  Prints MetaOperator according to the Metaoperatorskeleton
+         *
+         */ 
         string printBinaryperator(string lhs, string rhs, bool normal) {
             return operatorTemplate->printMe(lhs, rhs, normal);
         }
 
+        /**
+         *  Metaoperators can be learned for a formula size of 3, so we need to add additional variables for the inner tree.
+         *  Example :  our meta operator is G ||, we say G || is equal to GAnd, so our CNF generates only variables for GAnd , a and b, 
+         *  since the tree looks like this          
+         *          GA
+         *        /    \
+         *       a      b
+         *    But our inner tree has still
+         *
+         *          G
+         *          |
+         *         AND
+         *  So we need additional RunVariables for the inner nodes.
+         *
+         *  @param exampleId - the current Plan
+         *  @param skeletonId - the current skeletonNode
+         *  @param maxLength - the length of the Plan
+         *  @param dict - the VariableDictionary to get information of skeletons and literals
+         */
         void generateAdditionalVarsForExample(int exampleId, int skeletonId, int maxLength,VarsDict* dict){
             for (int timeStep = 0; timeStep < maxLength; timeStep++){
                 //Alpha
@@ -62,33 +94,56 @@ class MetaOperator : public Operator {
             }
 
         }
+        
 
-        vector<vector<int> > genClausesRecursive(int exampleId, int timeStep, int skeletonId, int maxLength, int fmlSize, VarsDict dict, OperatorTemplate* currentPos, int st, bool dual){
-            //leafs are already covered
+        /**
+         *  
+         *  Creates the clauses for the metaoperator, 
+         *
+         *  Can be split in multiple cases 
+         *      1. We have a leaf, means there may only be literals -> nothing to be done, since we covered this in literal type clause generation
+         *      2. We have an unary operator, so we generate the clauses for the unary operator and call this for the subformula(alpha)
+         *      3. We have a binary operator, so we generate the clauses for the binary operator and call this for both subformulas(alpha nad beta)
+         *  
+         *  @params exampleId - the id of the current example
+         *  @params timeStep - the current timestep
+         *  @params skeletonId - the current skeletonId (should be 0), since we currently dont allow chains of metaoperators
+         *  @params maxLength - the number of states in the plan
+         *  @param fmlSize - the maximal formula size in number of possible nodes
+         *  @param dict - the variable dictionary to get information for variables ,etc/
+         *  @param currentPos - the pointer to the current position of inside the tree structure of the operator template
+         *  @param outerSkeletonType - the variable of the outerskeleton type to refer the clauses to this operator
+         *  @param dual - wether to generate clauses for positive and negative examples.
+         */ 
+        vector<vector<int> > genClausesRecursive(int exampleId, int timeStep, int skeletonId, int maxLength, int fmlSize, VarsDict dict, OperatorTemplate* currentPos, int outerSkeletonType, bool dual){
+            // first case : leafs are already covered
             vector<vector<int> > clauses;
             if (currentPos->leaf != 0) {
                 return clauses;
             }
             VarPackage varPackage;
             varPackage.ets = dict.getMetaEtsId(exampleId,timeStep,skeletonId,currentPos->varId);
-            varPackage.st = st;
+            varPackage.st = outerSkeletonType;
+            //second case : unary
             if (currentPos->isUnary) {
                         varPackage.alpha = dict.getMetaEtsId(exampleId, timeStep, skeletonId, currentPos->rhs->getMetaId());
-                    for (vector<int> cl : genClausesRecursive(exampleId, timeStep, skeletonId, maxLength, fmlSize,dict,currentPos->rhs,st,dual)){
+                    for (vector<int> cl : genClausesRecursive(exampleId, timeStep, skeletonId, maxLength, fmlSize,dict,currentPos->rhs,outerSkeletonType,dual)){
                         clauses.push_back(cl);
                     }
             }
+            // third case : binary
             else {
                         varPackage.alpha = dict.getMetaEtsId(exampleId, timeStep, skeletonId, currentPos->lhs->getMetaId());
                         varPackage.beta = dict.getMetaEtsId(exampleId, timeStep, skeletonId, currentPos->rhs->getMetaId());
-                    for (vector<int> cl : genClausesRecursive(exampleId, timeStep, skeletonId, maxLength, fmlSize,dict,currentPos->rhs,st,dual)){
+                    for (vector<int> cl : genClausesRecursive(exampleId, timeStep, skeletonId, maxLength, fmlSize,dict,currentPos->rhs,outerSkeletonType,dual)){
                         clauses.push_back(cl);
                     }
-                    for (vector<int> cl : genClausesRecursive(exampleId, timeStep, skeletonId, maxLength, fmlSize,dict,currentPos->lhs,st,dual)){
+                    for (vector<int> cl : genClausesRecursive(exampleId, timeStep, skeletonId, maxLength, fmlSize,dict,currentPos->lhs,outerSkeletonType,dual)){
                         clauses.push_back(cl);
                     }
             } 
 
+            // create clauses for operator types
             if (timeStep + 1 < maxLength){
                 varPackage.etsPrime= dict.getMetaEtsId(exampleId, timeStep + 1, skeletonId, currentPos->varId);
                     varPackage.alphaPrime = dict.getMetaEtsId(exampleId, timeStep + 1, skeletonId, currentPos->rhs->getMetaId());  
@@ -107,6 +162,19 @@ class MetaOperator : public Operator {
 
 
 
+        /**
+         *  
+         *  Creates the clauses for the unary operator runs,
+         *  implement the chaining between the operator and subformula and connects them to the outer metaoperator
+         *
+         *  
+         *  @params exampleId - the id of the current example
+         *  @params timeStep - the current timestep
+         *  @params skeletonId - the current skeletonId (should be 0), since we currently dont allow chains of metaoperators
+         *  @params maxLength - the number of states in the plan
+         *  @param fmlSize - the maximal formula size in number of possible nodes
+         *  @param dict - the variable dictionary to get information for variables ,etc/
+         */ 
         vector<vector<int> >genClausesUnary(int exampleId, int timeStep,int skeletonId, int maxLength, int fmlSize, VarsDict dict) {
             vector<vector<int> > clauses;
             int varETSId = dict.getVarEtsId(exampleId, timeStep, skeletonId);
@@ -134,6 +202,19 @@ class MetaOperator : public Operator {
         }
 
 
+        /**
+         *  
+         *  Creates the dual clauses for the unary operator runs,
+         *  implement the chaining between the operator and subformula and connects them to the outer metaoperator
+         *
+         *  
+         *  @params exampleId - the id of the current example
+         *  @params timeStep - the current timestep
+         *  @params skeletonId - the current skeletonId (should be 0), since we currently dont allow chains of metaoperators
+         *  @params maxLength - the number of states in the plan
+         *  @param fmlSize - the maximal formula size in number of possible nodes
+         *  @param dict - the variable dictionary to get information for variables ,etc/
+         */ 
         virtual vector<vector<int>> genDualClausesUnary(int exampleId, int timeStep, int skeletonId, int maxLength, int fmlSize, VarsDict dict) {
             vector<vector<int> > clauses;
             int varETSId = dict.getVarEtsId(exampleId, timeStep, skeletonId);
@@ -163,6 +244,19 @@ class MetaOperator : public Operator {
 
 
 
+        /**
+         *  
+         *  Creates the clauses for the operator runs,
+         *  implement the chaining between the operator and subformula and connects them to the outer metaoperator
+         *
+         *  
+         *  @params exampleId - the id of the current example
+         *  @params timeStep - the current timestep
+         *  @params skeletonId - the current skeletonId (should be 0), since we currently dont allow chains of metaoperators
+         *  @params maxLength - the number of states in the plan
+         *  @param fmlSize - the maximal formula size in number of possible nodes
+         *  @param dict - the variable dictionary to get information for variables ,etc/
+         */ 
         virtual vector<vector<int>> genClauses(int exampleId, int timeStep, int skeletonId, int maxLength, int fmlSize, VarsDict dict) {
             if (!hasBeta)
                 return genClausesUnary(exampleId,timeStep, skeletonId,maxLength, fmlSize,dict);
@@ -217,6 +311,19 @@ class MetaOperator : public Operator {
             return clauses;
         }
 
+        /**
+         *  
+         *  Creates the clauses for the operator runs,
+         *  implement the chaining between the operator and subformula and connects them to the outer metaoperator
+         *
+         *  
+         *  @params exampleId - the id of the current example
+         *  @params timeStep - the current timestep
+         *  @params skeletonId - the current skeletonId (should be 0), since we currently dont allow chains of metaoperators
+         *  @params maxLength - the number of states in the plan
+         *  @param fmlSize - the maximal formula size in number of possible nodes
+         *  @param dict - the variable dictionary to get information for variables ,etc/
+         */ 
         virtual vector<vector<int>> genDualClauses(int exampleId, int timeStep, int skeletonId, int maxLength, int fmlSize, VarsDict dict) {
             if (!hasBeta)
                 return genDualClausesUnary(exampleId,timeStep, skeletonId,maxLength, fmlSize,dict);
@@ -261,6 +368,17 @@ class MetaOperator : public Operator {
         }
 
         public: 
+
+        /**
+         *
+         * Constructor for the Metaoperator
+         *
+         * @param type - the id of the type, usually starting at 10 
+         * @param isBinary - if this operator is something like  F G a (unary) or G || a b (binary)
+         * @param operatorTemplate - the inner structure oft the metaOperator
+         * @param varsPerExample - the number of variables needed to track the runs in the inner tree
+         *
+         */
         MetaOperator(int type, bool isBinary, OperatorTemplate* operatorTemplate, int varsPerExample):metaType(type),hasBeta(isBinary),operatorTemplate(operatorTemplate) {
             this->addVarsPExample = varsPerExample;
             this->isMeta = true;

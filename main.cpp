@@ -20,7 +20,10 @@ namespace fs = std::filesystem;
 
 
 
-
+    /**
+     *  Help function
+     *
+     */ 
     void printHelp() {
         cout << "-f [folder]" << endl;
         cout << "if -f is used, positive examples contain 'good', negative examples should contain 'bad'" << endl;
@@ -39,6 +42,13 @@ namespace fs = std::filesystem;
         cout << "--meta-operators <file> to define own operators" << endl;
     }
 
+    /**
+     * Reads all files from this folder and parses them into examplePlans
+     *
+     * @param folderName - the path to the folder
+     * @param parser - the instantiated parser
+     * @return a list of the parsed plans
+     */
     vector<vector<vector<string> > > readExamplesFromFolder(char* folderName, Parser *parser) {
         vector<vector<vector<string> > > parsedTraces;
         for (const auto &entry : fs::directory_iterator(folderName)) {
@@ -50,6 +60,14 @@ namespace fs = std::filesystem;
     }
 
 
+    /**
+     * Reads all files from this folder and parses them into examplePlans,
+     * positive plans usually start in this case with the prefix good.
+     *
+     * @param folderName - the path to the folder
+     * @param parser - the instantiated parser
+     * @return a list of the parsed plans
+     */
     vector<vector<vector<string> > > readPosExamplesFromFolder(char* folderName, Parser *parser) {
         vector<vector<vector<string> > > parsedTraces;
         for (const auto &entry : fs::directory_iterator(folderName)) {
@@ -63,6 +81,14 @@ namespace fs = std::filesystem;
 
     }
 
+    /**
+     * Reads all files from this folder and parses them into examplePlans,
+     * positive plans usually start in this case with the prefix "bad".
+     *
+     * @param folderName - the path to the folder
+     * @param parser - the instantiated parser
+     * @return a list of the parsed plans
+     */
     vector<vector<vector<string> > > readBadExamplesFromFolder(char* folderName, Parser *parser) {
         vector<vector<vector<string> > > parsedTraces;
         for (const auto &entry : fs::directory_iterator(folderName)) {
@@ -76,6 +102,15 @@ namespace fs = std::filesystem;
 
     }
 
+/**
+ *      Support function for replacing characters in a string, used for removing "(" for the automaton generation
+ *      
+ *      @param data - string containg the data
+ *      @param match - string which has to be replaced
+ *      @param replace - the string which replaces the match
+ 
+ *
+ */
 void findAndReplaceAll( std::string& data,  
                         const std::string& match,  
                         const std::string& replace) 
@@ -94,7 +129,25 @@ void findAndReplaceAll( std::string& data,
 } 
  
 
-
+/**
+ *  
+ *  Main function,
+ *  Parsing and then invoking the learner according to the input,
+ *  
+ *  1. Learning Contrastive Formulas 
+ *   ../../learner/build/learner -p positivePlans/stateBased -n negativePlans/stateBased --formula-count -1 -a -s 4 -r --permutations 20 --permutation-count 1
+ *   -p positive plans
+ *   -n negative plans
+ *   --formula-count maximum numbers of formulas
+ *   -a  parserargument for using right parser
+ *   -s 4 formula size bound
+ *   --permutations = number of positive/negative plans per call
+ *   --permutation-count = number of instantiations
+ * 2. Learning Blind 
+ *   ../../learner/build/learner -f stateBased --formula-count 5 -a -s 4 -r --permutations 3 --permutation-count 10 
+ *  for using metaoperators, add the flag
+ *  --meta-operators ../../learner/operators.txt
+ */
 
 int main(int argc, char* argv[]) {
 
@@ -326,9 +379,10 @@ int main(int argc, char* argv[]) {
                 currentSize = 2;
                 formulaSize = 3;
             }
+            //shuffle the examples to get different results
            while (!learned && currentSize++ <formulaSize){
                 std::random_device rd;
-                std::mt19937 g(5);
+                std::mt19937 g(rd());
                 cout << currentSize << endl;
                 std::shuffle(exampleInts.begin(), exampleInts.end(), g);
                 //cout << "Learning..." << endl;

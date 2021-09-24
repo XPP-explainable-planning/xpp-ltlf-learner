@@ -7,6 +7,11 @@
 #include <unordered_map>
 using namespace std;
 
+
+/**
+ *  The Dictionary to store and get all data needed for learning
+ *  for each type, we have one map      
+ */
 class VarsDict{
     private: 
         unordered_map<int,unordered_map<int,unordered_map<int,Variable*> > > examples;
