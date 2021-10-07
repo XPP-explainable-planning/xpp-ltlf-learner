@@ -18,15 +18,16 @@ using namespace std;
  *  @param mustnotHold - a list of facts that must not hold for this transition
  *
  */ 
+
 void addTransitions(Automaton* at,int current, int target, int numFacts,
                           vector<int> mustHold, vector<int> mustNotHold) {
-    
     
     if (mustHold.size() + mustNotHold.size() == numFacts){
         int res = 0;
         for (int a : mustHold){
             res = res + pow(2,a);
         }
+        
         at->toNextState.at(current).at(res).insert(target);
     }
     else {
@@ -106,7 +107,6 @@ Automaton *automatonFromHoaFile(const string &filename) {
     if (myfile.is_open()) {
         getline(myfile, line);
         getline(myfile, line);
-        getline(myfile, line);
         //Read num States
         int numStates;
         sscanf(line.c_str(), "States: %i", &numStates);
@@ -128,7 +128,6 @@ Automaton *automatonFromHoaFile(const string &filename) {
                 tokens.push_back(buf);
             }
         }
-        
          automaton = new Automaton(numStates,start, tokens);
         
             //   printf("position of ap %s is %d\n",buf.c_str(),position);
@@ -142,7 +141,6 @@ Automaton *automatonFromHoaFile(const string &filename) {
         getline(myfile, line);
         int currentState = -1;
         while (line != "--END--") {
-            //   printf("current line is : %s\n",line.c_str());
             if (line[0] == 'S') {
                 currentState++ ;
                 stringstream statestream(line);
@@ -206,7 +204,7 @@ Automaton *automatonFromHoaFile(const string &filename) {
  */ 
 Automaton* generateAutomaton(string formula)
 {
-  string call = "python3 pathToLTLfkit/ltlf2hoa.py\'" + formula + "\' | autfilt --small -C -D -S > a.txt";
+  string call = "python3 ~/ltl-learner/ltlfkit/ltlf2hoa.py \'" + formula + "\' | autfilt --small -C -D -S > a.txt";
   //
   //cout << call <<endl;
   system(call.c_str());

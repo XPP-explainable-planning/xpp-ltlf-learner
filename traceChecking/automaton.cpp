@@ -68,7 +68,6 @@ int Automaton::fromPlanState(vector<string> planState) {
     }
     return res;
 }
-
 /**
  *  Prints the automaton- for debugging
  *

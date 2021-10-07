@@ -22,7 +22,7 @@ vector<string> Parser::getVocabulary() {
             voc.push_back(*iter);
         }
         return voc;
-    }
+}
 
 /**
  *  Returns the filesize of the file,

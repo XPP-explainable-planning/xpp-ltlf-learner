@@ -464,7 +464,6 @@
         string formula = learnFormula();
         
         while ((formula.compare("") != 0 && (infinite || count < formulaCount))){
-            cout << "learned Fromulas: " << count << endl;
             formulas.push_back(formula);
             formula = learnFormula();
             count ++;
